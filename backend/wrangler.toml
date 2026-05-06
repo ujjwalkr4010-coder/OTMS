@@ -1,0 +1,13 @@
+name = "otms-backend"
+main = "worker.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+NODE_ENV = "production"
+
+# Set these secrets via CLI:
+#   wrangler secret put SUPABASE_URL
+#   wrangler secret put SUPABASE_SERVICE_KEY
+#   wrangler secret put JWT_SECRET
+#   wrangler secret put FRONTEND_URL
