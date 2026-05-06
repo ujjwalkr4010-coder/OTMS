@@ -1,30 +1,24 @@
 import axios from 'axios';
 
-// Determine the API base URL
-// In production this MUST be set as VITE_API_URL in Cloudflare Pages env vars
-const BASE_URL = import.meta.env.VITE_API_URL
-  || (import.meta.env.DEV ? 'http://localhost:5001/api' : null);
+// Production URL — fallback if VITE_API_URL is not set in build
+const PROD_URL = 'https://otms-backend.onrender.com/api';
+const DEV_URL  = 'http://localhost:5001/api';
 
-if (!BASE_URL) {
-  console.error('VITE_API_URL is not set. API calls will fail.');
-}
+const BASE_URL = import.meta.env.VITE_API_URL
+  || (import.meta.env.DEV ? DEV_URL : PROD_URL);
 
 const api = axios.create({
   baseURL: BASE_URL,
   headers: { 'Content-Type': 'application/json' },
-  timeout: 30000, // 30s timeout for Render cold starts
+  timeout: 30000,
 });
 
-// Attach token to every request
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('otms_token');
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
-// Handle errors globally
 api.interceptors.response.use(
   res => res,
   err => {
@@ -37,3 +31,4 @@ api.interceptors.response.use(
 );
 
 export default api;
+
