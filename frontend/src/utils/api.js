@@ -1,11 +1,10 @@
 import axios from 'axios';
 
-// Production URL — fallback if VITE_API_URL is not set in build
-const PROD_URL = 'https://otms-backend.onrender.com/api';
-const DEV_URL  = 'http://localhost:5001/api';
-
+// Always use Render backend in production
 const BASE_URL = import.meta.env.VITE_API_URL
-  || (import.meta.env.DEV ? DEV_URL : PROD_URL);
+  || (typeof window !== 'undefined' && window.location.hostname !== 'localhost'
+      ? 'https://otms-backend.onrender.com/api'
+      : 'http://localhost:5001/api');
 
 const api = axios.create({
   baseURL: BASE_URL,
