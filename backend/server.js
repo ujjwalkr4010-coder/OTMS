@@ -7,27 +7,38 @@ dotenv.config();
 const app = express();
 
 // ── CORS ──────────────────────────────────────────────────────────────────────
-const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:4173',
-  process.env.FRONTEND_URL,
-].filter(Boolean);
-
 app.use(cors({
   origin: (origin, callback) => {
-    // Allow requests with no origin (mobile apps, curl, Postman)
+    // Allow no-origin requests (Postman, curl, mobile)
     if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin)) return callback(null, true);
-    // In development allow all
+
+    const allowed = [
+      'http://localhost:5173',
+      'http://localhost:4173',
+      process.env.FRONTEND_URL,
+    ].filter(Boolean);
+
+    // Allow exact match
+    if (allowed.includes(origin)) return callback(null, true);
+
+    // Allow any *.pages.dev subdomain (Cloudflare Pages)
+    if (origin.endsWith('.pages.dev')) return callback(null, true);
+
+    // Allow any *.onrender.com (Render previews)
+    if (origin.endsWith('.onrender.com')) return callback(null, true);
+
+    // Allow all in development
     if (process.env.NODE_ENV !== 'production') return callback(null, true);
+
+    console.warn('CORS blocked origin:', origin);
     callback(new Error(`CORS blocked: ${origin}`));
   },
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
 }));
 
-// Handle preflight for all routes
+// Handle ALL preflight requests
 app.options('*', cors());
 
 app.use(express.json({ limit: '10mb' }));
